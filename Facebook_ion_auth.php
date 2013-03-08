@@ -63,13 +63,13 @@ class Facebook_ion_auth {
 
 				$user = json_decode(file_get_contents($graph_url));
 
-				$session_data = array(
-					'username'             => $user->username,
-					'email'             => $user->email,
-					'name'				   => $user->name,
-					'facebook_reg'		   => true // for checking if is facebook user
-				);
-				$this->CI->session->set_userdata($session_data);
+				// check if this user is already registered
+				if(!$this->CI->ion_auth_model->identity_check($user->email)){
+					$name = explode(" ", $user->name);
+					$register = $this->CI->ion_auth->register($user->username, 'facebookdoesnothavepass123^&*%', $user->email, array('first_name' => $name[0], 'last_name' => $name[1]));
+				} else {
+					$login = $this->CI->ion_auth->login($user->email, 'facebookdoesnothavepass123^&*%', 1);
+				}
 
 				return true;
 		    }
