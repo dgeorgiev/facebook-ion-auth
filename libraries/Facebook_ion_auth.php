@@ -14,11 +14,19 @@ class Facebook_ion_auth {
 		// get Codeigniter instance
 	    $this->CI =& get_instance();
 
-		// config
-		$this->app_id = ""; // your app id
-		$this->app_secret = ""; // your app secret key
-		$this->my_url = site_url(''); // url to redirect back from facebook
-		$this->scope = 'email'; // custom permissions check - http://developers.facebook.com/docs/reference/login/#permissions
+	    // Load config
+	    $this->CI->load->config('facebook_ion_auth', TRUE);
+
+		$this->app_id = $this->CI->config->item('app_id', 'facebook_ion_auth');
+		$this->app_secret = $this->CI->config->item('app_secret', 'facebook_ion_auth'); 
+		$this->scope = $this->CI->config->item('scope', 'facebook_ion_auth');
+		
+		if($this->CI->config->item('redirect_uri', 'facebook_ion_auth') === '' ) {
+			$this->my_url = site_url(''); 
+		} else {
+			$this->my_url = $this->CI->config->item('redirect_uri', 'facebook_ion_auth');
+		}
+		
 	}
 
     public function login() {
