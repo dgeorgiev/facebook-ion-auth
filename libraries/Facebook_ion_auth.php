@@ -20,7 +20,12 @@ class Facebook_ion_auth {
 		$this->app_id = $this->CI->config->item('app_id', 'facebook_ion_auth');
 		$this->app_secret = $this->CI->config->item('app_secret', 'facebook_ion_auth'); 
 		$this->scope = $this->CI->config->item('scope', 'facebook_ion_auth');
-		
+
+		$this->fields = $this->CI->config->item('fields', 'facebook_ion_auth');
+		if (empty($this->fields)) {
+			$this->fields = 'id,first_name,last_name';
+		}
+
 		if($this->CI->config->item('redirect_uri', 'facebook_ion_auth') === '' ) {
 			$this->my_url = site_url(''); 
 		} else {
@@ -67,15 +72,25 @@ class Facebook_ion_auth {
 
 				$this->CI->session->set_userdata('access_token', $params['access_token']);
 
-				$graph_url = "https://graph.facebook.com/me?access_token=".$params['access_token'];
+				$graph_url = "https://graph.facebook.com/me?access_token=".$params['access_token'].'&fields='.$this->fields;
 
 				$user = json_decode(file_get_contents($graph_url));
 
-				// check if this user is already registered
-				if(!$this->CI->ion_auth_model->identity_check($user->email)){
-					$name = explode(" ", $user->name);
-					$register = $this->CI->ion_auth->register($user->username, 'facebookdoesnothavepass123^&*%', $user->email, array('first_name' => $name[0], 'last_name' => $name[1]));
+				if (empty($user->email)) {
+					// if user did not permit email address
+					return false;
 				} else {
+					// check if this user is already registered
+					if(!$this->CI->ion_auth_model->identity_check($user->email)){
+						$username = 'user'.$user->id; // generate username with facebook id
+						$register = $this->CI->ion_auth->register($username, 'facebookdoesnothavepass123^&*%', $user->email, array(
+							'first_name'  => $user->first_name,
+							'last_name'   => $user->last_name,
+							// if you want to add more facebook-related fields, you will have to add them in the user table
+							//'fb_id'       => $user->id,
+							//'fb_info'     => serialize($user),
+						));
+					}
 					$login = $this->CI->ion_auth->login($user->email, 'facebookdoesnothavepass123^&*%', 1);
 				}
 
