@@ -26,6 +26,8 @@ class Facebook_ion_auth {
 			$this->fields = 'id,first_name,last_name';
 		}
 
+		$this->dummy_password = 'facebookdoesnothavepass123^&*%';
+
 		if($this->CI->config->item('redirect_uri', 'facebook_ion_auth') === '' ) {
 			$this->my_url = site_url(''); 
 		} else {
@@ -83,7 +85,7 @@ class Facebook_ion_auth {
 					// check if this user is already registered
 					if(!$this->CI->ion_auth_model->identity_check($user->email)){
 						$username = 'user'.$user->id; // generate username with facebook id
-						$register = $this->CI->ion_auth->register($username, 'facebookdoesnothavepass123^&*%', $user->email, array(
+						$register = $this->CI->ion_auth->register($username, $this->dummy_password, $user->email, array(
 							'first_name'  => $user->first_name,
 							'last_name'   => $user->last_name,
 							// if you want to add more facebook-related fields, you will have to add them in the user table
@@ -91,7 +93,7 @@ class Facebook_ion_auth {
 							//'fb_info'     => serialize($user),
 						));
 					}
-					$login = $this->CI->ion_auth->login($user->email, 'facebookdoesnothavepass123^&*%', 1);
+					$login = $this->CI->ion_auth->login($user->email, $this->dummy_password, 1);
 				}
 
 				return true;
